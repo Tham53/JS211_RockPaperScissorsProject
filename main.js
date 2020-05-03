@@ -1,110 +1,117 @@
-// uses strict mode so strings are not coerced, variables are not hoisted, etc... 
-'use strict';
+const game = ()=> {
+  let pScore =0;
+  let cScore =0;
 
-// brings in the assert module for unit testing
-const assert = require('assert');
-// brings in the readline module to access the command line
-const readline = require('readline');
-// use the readline module to print out to the command line
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+  //Start the game
+  const startGame = () =>{
+      const playBtn = document.querySelector (".intro button")
+      const introScreen = document.querySelector (".intro")
+      const match = document.querySelector (".match")
 
-// the function that will be called by the unit test below
-const rockPaperScissors = (hand1, hand2) => {
+      playBtn.addEventListener("click", () =>{
+          introScreen.classList.add("fadeOut");
+          match.classList.add("fadeIn");
+      });
+  };
+  //Play match
+  const playMatch = () =>{
+      const options = document.querySelectorAll (".options button")
+      const playerHand = document.querySelectorAll (".player-hand")
+      const computerHand = document.querySelectorAll (".computer-hand")
+      const hands = document.querySelector(".hands img");
 
-  // Write code here
-  // Use the unit test to see what is expected
-  
-  let userChosen
-  let computerChosen
-  const displayResult = document.getElementById('result')
-  const userChoice = document.getElementById('your-choice')
-  var result = results()
-  const possibleChoices = document.querySelectorAll('.choices')
-  const computerChoice = document.getElementById('computer-choice')
-  const randomNumber = Math.round(Math.random() * (3))
-  
-  
-  
-  // Get users userChoice
-  possibleChoices.forEach(possibleChoice => possibleChoice.addEventListener('click', (e) => {
-    userChosen = e.target.id
-    generatedComputerChoice()
-    results()
-    userChoice.innerHTML = userChosen
-    computerChoice.innerHTML = computerChosen
-    displayResult.innerHTML = result
-  }))
-  
-  //Get a random computers choice
-  function generatedComputerChoice() {
-    if (randomNumber === 1) {
-      return computerChosen = 'rock'
-    } else if (randomNumber === 2) {
-      return computerChosen = 'paper'
-    } else if (randomNumber === 3) {
-      return computerChosen = 'scissors'
-    }
-  }
-  
-  function results() {
-    if (computerChosen == userChosen) {
-      return result = 'There was a tie'
-    } else if (computerChosen === 'rock' && userChosen === 'paper') {
-      return result = 'you lost'
-    } else if (computerChosen === 'rock' && userChosen === 'scissors') {
-      return result = 'you win!'
-    } else if (computerChosen === 'paper' && userChosen === 'rock') {
-      return result = 'you lost'
-    } else if (computerChosen === 'paper' && userChosen === 'scissors') {
-      return result = 'you win!'
-    } else if (computerChosen === 'scissors' && userChosen === 'rock') {
-      return result = 'you win!'
-    } else if (computerChosen === 'scissors' && userChosen === 'paper') {
-      return result = 'you lost'
-    }
-  }
+      hands.forEach(hand=>{
+          hand.addEventListener("animationend", function(){
+              this.style.animation = '';
+          })
+      })
+      //computer options
+      const computerOptions = ["rock", "paper", "scissors"];
 
-// the first function called in the program to get an input from the user
-// to run the function use the command: node main.js
-// to close it ctrl + C
-function getPrompt() {
-  rl.question('hand1: ', (answer1) => {
-    rl.question('hand2: ', (answer2) => {
-      console.log( rockPaperScissors(answer1, answer2) );
-      getPrompt();
-    });
-  });
+      options.forEach(option=>{
+          option.addEventListener("click", function(){
+              //computer choice
+              const computerNumber = Math.floor(Math.random() * 3);
+              const computerChoice = computerOptions[computerNumber];
+
+              setTimeout(() =>{
+              //here is where we call compare hands
+              compareHands(this.textContent, computerChoice);
+             //update images
+          playerHand.src = './assets/${this.textContent}.jpg';
+          computerHand.src = './assets/${computerChoice}.jpg';
+              }, 2000);
+//animation
+          playerHand.style.animation = "shakePlayer 2s ease";
+          computerHand.style.animation = "shakeComputer 2s ease";
+          });
+      });
+  };
+
+  const updateScore = () =>{
+      const playerScore = document.querySelector(".player-score p");
+      const computerScore = document.querySelector(".computer-score p");
+      playerScore.textContent = pScore;
+      computerScore.textContent = cScore;
+  };
+
+  const compareHands = (playerChoice, computerChoice) =>{
+//update text
+const winner = document.querySelector(".winner");
+//checking for a tie
+if(playerChoice === computerChoice){
+  winner.textContent = "It is a tie";
+  return;
 }
-
-// Unit Tests
-// You use them run the command: npm test main.js
-// to close them ctrl + C
-if (typeof describe === 'function') {
-
-  // most are notes for human eyes to read, but essentially passes in inputs then compares if the function you built return the expected output.
-  describe('#rockPaperScissors()', () => {
-    it('should detect a tie', () => {
-      assert.equal(rockPaperScissors('rock', 'rock'), "It's a tie!");
-      assert.equal(rockPaperScissors('paper', 'paper'), "It's a tie!");
-      assert.equal(rockPaperScissors('scissors', 'scissors'), "It's a tie!");
-    });
-    it('should detect which hand won', () => {
-      assert.equal(rockPaperScissors('rock', 'paper'), "Hand two wins!");
-      assert.equal(rockPaperScissors('paper', 'scissors'), "Hand two wins!");
-      assert.equal(rockPaperScissors('rock', 'scissors'), "Hand one wins!");
-    });
-    it('should scrub input to ensure lowercase with "trim"ed whitepace', () => {
-      assert.equal(rockPaperScissors('rOcK', ' paper '), "Hand two wins!");
-      assert.equal(rockPaperScissors('Paper', 'SCISSORS'), "Hand two wins!");
-      assert.equal(rockPaperScissors('rock ', 'sCiSsOrs'), "Hand one wins!");
-    });
-  });
-} else {
-
-  // always returns ask the user for another input
-  getPrompt();
-
+  //check for rock
+  if(playerChoice === "rock"){
+      if(computerChoice === "scissors"){
+          winner.textContent = "Player Wins";
+          pScore++;
+          updateScore();
+          return;
+  }else{
+      winner.textContent = "Computer Wins";
+      cScore++;
+      updateScore();
+      return;
+  }
 }
+//check for paper
+if(playerChoice === "paper"){
+  if(computerChoice === "scissors"){
+      winner.textContent = "Computer Wins";
+      cScore++;
+      updateScore();
+      return;
+}else{
+  winner.textContent = "Player Wins";
+  pScore++;
+  updateScore();
+  return;
+}
+}
+// check for scissors
+if(playerChoice === "scissors"){
+  if(computerChoice === "rock"){
+      winner.textContent = "Computer Wins";
+      cScore++;
+      updateScore();
+      return;
+}else{
+  winner.textContent = "Player Wins";
+  pScore++;
+  updateScore();
+  return;
+}
+}
+  }
+
+  //Is call all the inner functions
+  startGame();
+  playMatch();
+};
+
+
+//start the game function
+game();
